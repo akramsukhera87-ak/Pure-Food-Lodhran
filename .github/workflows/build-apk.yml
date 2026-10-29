@@ -13,26 +13,28 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 9.1.0
+
       - name: Build APK
         run: |
           ls -la
-          if [ -d "Pure-Food-Lodhran" ]; then
-            cd Pure-Food-Lodhran
-            echo "Inside folder"
-          fi
+          if [ -d "Pure-Food-Lodhran" ]; then cd Pure-Food-Lodhran; fi
+          pwd
           ls -la
-          # Make wrapper with Gradle 9.1 for AGP 9.1.1
           if [ ! -f "./gradlew" ]; then
-            echo "Creating gradle wrapper 9.1.0..."
             gradle wrapper --gradle-version 9.1.0
           fi
           chmod +x ./gradlew
           ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Pure-Food-Lodhran-APK
+          name: Pure-Food-APK
           path: |
             **/app/build/outputs/apk/debug/*.apk
             **/build/outputs/apk/debug/*.apk
