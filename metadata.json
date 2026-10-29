@@ -1,0 +1,6 @@
+{
+  "name": "Pure Food",
+  "description": "خالص راشن اور گھریلو سودا سلف کی ہوم ڈیلیوری لودھراں، پنجاب - Pure Food Grocery Lodhran",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
