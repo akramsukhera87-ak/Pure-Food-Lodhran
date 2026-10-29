@@ -6,17 +6,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+          
+      - name: Fix Versions
+        run: |
+          if [ -d "Pure-Food-Lodhran" ]; then cd Pure-Food-Lodhran; fi
+          find . -name "*.gradle.kts" -type f -exec sed -i 's/9.1.1/8.2.2/g' {} \;
+          find . -name "*.gradle" -type f -exec sed -i 's/9.1.1/8.2.2/g' {} \;
+          echo "Fixed"
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: 8.7
+
       - name: Build APK
         run: |
           if [ -d "Pure-Food-Lodhran" ]; then cd Pure-Food-Lodhran; fi
@@ -24,8 +32,9 @@ jobs:
           if [ ! -f "./gradlew" ]; then gradle wrapper --gradle-version 8.7; fi
           chmod +x ./gradlew
           ./gradlew assembleDebug
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Pure-Food-APK
-          path: '**/*.apk'
+          path: '**/build/outputs/apk/debug/*.apk'
