@@ -10,27 +10,17 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Find and Build
+      - name: Setup Gradle 8.5
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.5
+      - name: Generate gradlew and Build APK
         run: |
-          ls -la
-          find . -type f -name "gradlew"
-          if [ -f "./gradlew" ]; then
-            chmod +x ./gradlew
-            ./gradlew assembleDebug --stacktrace
-          elif [ -f "./android/gradlew" ]; then
-            chmod +x ./android/gradlew
-            cd android && ./gradlew assembleDebug --stacktrace
-          elif [ -f "./app/gradlew" ]; then
-            chmod +x ./app/gradlew
-            cd app && ./gradlew assembleDebug --stacktrace
-          else
-            echo "gradlew not found"
-            ls -R
-            exit 1
-          fi
-      - uses: actions/upload-artifact@v4
+          gradle wrapper --gradle-version 8.5
+          chmod +x gradlew
+          ./gradlew assembleDebug --stacktrace
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
           name: Pure-Food-APK
-          path: |
-            **/app-debug.apk
-            **/*.apk
+          path: app/build/outputs/apk/debug/*.apk
