@@ -13,30 +13,39 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Fix Gradle Wrapper
-        run: |
-          ROOT="."
-          if [ -d "Pure-Food-Lodhran" ]; then ROOT="Pure-Food-Lodhran"; fi
-          echo "Fixing wrapper in $ROOT"
-          cat > $ROOT/gradle/wrapper/gradle-wrapper.properties << 'EOF'
-          distributionBase=GRADLE_USER_HOME
-          distributionPath=wrapper/dists
-          distributionUrl=https\://services.gradle.org/distributions/gradle-8.7-bin.zip
-          zipStoreBase=GRADLE_USER_HOME
-          zipStorePath=wrapper/dists
-          EOF
-          sed -i 's/9.1.1/8.2.2/g' $ROOT/app/build.gradle.kts || true
-          sed -i 's/9.1.1/8.2.2/g' $ROOT/build.gradle.kts || true
-          cat $ROOT/gradle/wrapper/gradle-wrapper.properties
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.7
 
       - name: Build APK
         run: |
+          # Find project root
           if [ -d "Pure-Food-Lodhran" ]; then cd Pure-Food-Lodhran; fi
+          pwd
+          ls -la
+          
+          # Fix wrapper properties
+          mkdir -p gradle/wrapper
+          echo "distributionUrl=https\://services.gradle.org/distributions/gradle-8.7-bin.zip" > gradle/wrapper/gradle-wrapper.properties
+          echo "distributionBase=GRADLE_USER_HOME" >> gradle/wrapper/gradle-wrapper.properties
+          echo "distributionPath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
+          echo "zipStoreBase=GRADLE_USER_HOME" >> gradle/wrapper/gradle-wrapper.properties
+          echo "zipStorePath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
+          
+          # Fix AGP 9.1.1 -> 8.2.2
+          find . -name "*.kts" | xargs sed -i 's/9.1.1/8.2.2/g' || true
+          
+          # Create gradlew if missing
+          if [ ! -f "./gradlew" ]; then
+            echo "gradlew not found, creating..."
+            gradle wrapper --gradle-version 8.7
+          fi
+          
           chmod +x ./gradlew
           ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Pure-Food-APK
