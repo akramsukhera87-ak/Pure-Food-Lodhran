@@ -1,77 +1,38 @@
-name: Build APK
+
+name: Build Pure Food APK
+
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
+    name: Build Android APK
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v5
+    steps:
+      - name: Get Source Code
+        uses: actions/checkout@v4
+
+      - name: Set Up Java
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: 17
 
-      - name: FIX ALL VERSIONS (The Real Fix)
-        run: |
-          echo "Creating compatible libs.versions.toml..."
-          mkdir -p gradle
-          cat > gradle/libs.versions.toml << 'EOF'
-          [versions]
-          agp = "8.5.2"
-          kotlin = "1.9.22"
-          coreKtx = "1.12.0"
-          junit = "4.13.2"
-          junitVersion = "1.1.5"
-          espressoCore = "3.5.1"
-          lifecycleRuntimeKtx = "2.7.0"
-          activityCompose = "1.8.2"
-          composeBom = "2024.02.00"
+      - name: Set Up Android SDK
+        uses: android-actions/setup-android@v3
 
-          [libraries]
-          androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-          junit = { group = "junit", name = "junit", version.ref = "junit" }
-          androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
-          androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
-          androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
-          androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
-          androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
-          androidx-ui = { group = "androidx.compose.ui", name = "ui" }
-          androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
-          androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
-          androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-          androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
-
-          [plugins]
-          androidApplication = { id = "com.android.application", version.ref = "agp" }
-          androidLibrary = { id = "com.android.library", version.ref = "agp" }
-          kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-          kotlinCompose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-          EOF
-          cat gradle/libs.versions.toml
-
-      - name: Setup Gradle 8.7
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: 8.7
+      - name: Grant Permission
+        run: chmod +x gradlew
 
       - name: Build APK
-        run: |
-          mkdir -p gradle/wrapper
-          echo "distributionBase=GRADLE_USER_HOME
-          distributionPath=wrapper/dists
-          distributionUrl=https://services.gradle.org/distributions/gradle-8.7-bin.zip
-          zipStoreBase=GRADLE_USER_HOME
-          zipStorePath=wrapper/dists" > gradle/wrapper/gradle-wrapper.properties
-          gradle wrapper --gradle-version 8.7
-          chmod +x ./gradlew
-          ./gradlew clean assembleDebug --stacktrace
+        run: ./gradlew assembleDebug
 
       - name: Upload APK
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Pure-Food-APK
-          path: '**/build/outputs/apk/debug/*.apk'
+          path: app/build/outputs/apk/debug/*.apk
