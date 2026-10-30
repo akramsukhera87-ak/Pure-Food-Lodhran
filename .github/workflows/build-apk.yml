@@ -1,52 +1,30 @@
-name: Build APK
-on:
-  workflow_dispatch:
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Set up JDK 17
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '17'
+[versions]
+agp = "8.5.2"
+kotlin = "1.9.22"
+coreKtx = "1.12.0"
+junit = "4.13.2"
+junitVersion = "1.1.5"
+espressoCore = "3.5.1"
+lifecycleRuntimeKtx = "2.7.0"
+activityCompose = "1.8.2"
+composeBom = "2024.02.00"
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: 8.7
+[libraries]
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+androidx-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 
-      - name: Build APK
-        run: |
-          # Find project root
-          if [ -d "Pure-Food-Lodhran" ]; then cd Pure-Food-Lodhran; fi
-          pwd
-          ls -la
-          
-          # Fix wrapper properties
-          mkdir -p gradle/wrapper
-          echo "distributionUrl=https\://services.gradle.org/distributions/gradle-8.7-bin.zip" > gradle/wrapper/gradle-wrapper.properties
-          echo "distributionBase=GRADLE_USER_HOME" >> gradle/wrapper/gradle-wrapper.properties
-          echo "distributionPath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
-          echo "zipStoreBase=GRADLE_USER_HOME" >> gradle/wrapper/gradle-wrapper.properties
-          echo "zipStorePath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
-          
-          # Fix AGP 9.1.1 -> 8.2.2
-          find . -name "*.kts" | xargs sed -i 's/9.1.1/8.2.2/g' || true
-          
-          # Create gradlew if missing
-          if [ ! -f "./gradlew" ]; then
-            echo "gradlew not found, creating..."
-            gradle wrapper --gradle-version 8.7
-          fi
-          
-          chmod +x ./gradlew
-          ./gradlew assembleDebug --stacktrace
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Pure-Food-APK
-          path: '**/build/outputs/apk/debug/*.apk'
+[plugins]
+androidApplication = { id = "com.android.application", version.ref = "agp" }
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
+kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlinCompose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
