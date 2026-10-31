@@ -11,14 +11,12 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Auto Fix Gradle Version
-        run: |
-          sed -i "s/gradle-.*-bin.zip/gradle-8.9-bin.zip/" gradle/wrapper/gradle-wrapper.properties || true
-          sed -i 's/agp = ".*"/agp = "8.7.3"/' gradle/libs.versions.toml || true
-      - name: Build APK
-        run: |
-          chmod +x ./gradlew
-          ./gradlew assembleDebug --no-daemon
+      - name: Setup Gradle 8.9
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.9
+      - name: Build APK without wrapper
+        run: gradle assembleDebug --no-daemon
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
