@@ -11,14 +11,15 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Setup Gradle 8.7
+      - name: Setup Gradle 8.9
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: 8.7
-      - name: Fix AGP Version for Compatibility
+          gradle-version: 8.9
+      - name: Fix Versions Correctly
         run: |
-          sed -i 's/agp = ".*"/agp = "8.2.2"/' gradle/libs.versions.toml || true
-          sed -i 's/kotlin = ".*"/kotlin = "1.9.22"/' gradle/libs.versions.toml || true
+          sed -i 's/agp = ".*"/agp = "8.7.3"/' gradle/libs.versions.toml || true
+          sed -i 's/secrets.*=.*".*"/secrets = "2.0.1"/' gradle/libs.versions.toml || true
+          sed -i 's/com.google.android.libraries.mapsplatform.secrets-gradle-plugin = ".*"/com.google.android.libraries.mapsplatform.secrets-gradle-plugin = "2.0.1"/' gradle/libs.versions.toml || true
           cat gradle/libs.versions.toml
       - name: Build APK
         run: gradle assembleDebug --no-daemon
